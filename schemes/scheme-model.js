@@ -35,7 +35,7 @@ function findSteps(id){
 
 function add(newScheme){
     return db('schemes')
-        .insert(newScheme)
+        .insert(newScheme, "id")
         .then(ids => {
             const [id] = ids;
 
@@ -45,12 +45,31 @@ function add(newScheme){
 
 function update(change, id){
     return db('schemes')
-        .where('id', Number(id))
-        .update(change)
+        .where({ id })
+        .update(change, id)
+        .then(count => {
+            if(count === 1){
+                return change
+            } else {
+                return null
+            }
+        })
 };
 
 function remove(id){
     return db('schemes')
         .where('id', Number(id))
-        .del()
+        .first()
+        .then(schemes => {
+            if(!schemes){
+                return null
+            } else {
+                return db('schemes')
+                    .where({ id })
+                    .del()
+                    .then(() => {
+                        return schemes;
+                    })
+            }
+        })
 }
